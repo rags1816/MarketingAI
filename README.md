@@ -1,2 +1,2 @@
 # MarketingAI
-Amrketing Strategy build up
+Marketing Strategy build up
