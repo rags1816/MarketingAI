@@ -280,7 +280,8 @@
         cross: "M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z",
         admin: "M12.65 10C11.83 7.67 9.61 6 7 6c-3.31 0-6 2.69-6 6s2.69 6 6 6c2.61 0 4.83-1.67 5.65-4H17v4h4v-4h2v-4H12.65zM7 14c-1.1 0-2-.9-2-2s.9-2 2-2s2 .9 2 2s-.9 2-2 2z",
         play: "M8 5v14l11-7z",
-        chevron: "M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"
+        chevron: "M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z",
+        menu: "M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"
       };
 
       const path = paths[name] || paths.dashboard;
@@ -770,7 +771,7 @@
 
       return (
         <div style={{ display: 'flex', height: '100vh', width: '100vw', background: 'linear-gradient(135deg, #0F172A 0%, #1E293B 100%)', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-          <div className="shadow-modal" style={{ width: '420px', background: '#FFFFFF', borderRadius: '16px', padding: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className="shadow-modal" style={{ width: '100%', maxWidth: '420px', background: '#FFFFFF', borderRadius: '16px', padding: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center', boxSizing: 'border-box' }}>
             <div style={{ textAlign: 'center', marginBottom: '24px' }}>
               <h1 className="font-display" style={{ fontSize: '24px', fontWeight: '700', color: 'var(--ink)' }}>MarketAI™ Platform</h1>
               <p style={{ fontSize: '13px', color: 'var(--ink-soft)', marginTop: '4px' }}>Enterprise B2B Marketing Intelligence Suite</p>
@@ -1346,6 +1347,18 @@
       const [editMode, setEditMode] = useState(false);
       const [showCopilot, setShowCopilot] = useState(false);
       const [showPrepGuide, setShowPrepGuide] = useState(true);
+      const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+      const [sidebarOpen, setSidebarOpen] = useState(false);
+
+      useEffect(() => {
+        const handleResize = () => {
+          const mobile = window.innerWidth < 768;
+          setIsMobile(mobile);
+          if (!mobile) setSidebarOpen(false);
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
 
       // Group modules
       const groupedModules = useMemo(() => {
@@ -1548,14 +1561,44 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
       };
 
       return (
-        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', position: 'relative' }}>
           
+          {/* Mobile Overlay Backdrop */}
+          {isMobile && sidebarOpen && (
+            <div 
+              onClick={() => setSidebarOpen(false)} 
+              style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', zIndex: 40, transition: 'opacity 0.3s ease' }} 
+            />
+          )}
+
           {/* Collapsible Sidebar */}
-          <div style={{ width: '272px', minWidth: '272px', background: 'var(--rail-bg)', display: 'flex', flexDirection: 'column', color: '#FFFFFF' }}>
+          <div style={{ 
+            width: '272px', 
+            minWidth: '272px', 
+            background: 'var(--rail-bg)', 
+            display: 'flex', 
+            flexDirection: 'column', 
+            color: '#FFFFFF',
+            position: isMobile ? 'fixed' : 'relative',
+            top: 0,
+            bottom: 0,
+            left: 0,
+            zIndex: isMobile ? 50 : 'auto',
+            transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+            transition: 'transform 0.3s ease-in-out',
+            boxShadow: isMobile && sidebarOpen ? '4px 0 24px rgba(15,23,42,0.5)' : 'none'
+          }}>
             <div style={{ padding: '20px', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span onClick={() => { setActiveModule("home"); }} className="font-display" style={{ fontSize: '18px', fontWeight: '700', cursor: 'pointer' }}>MarketAI™</span>
-                {auditMode && (
+                <span onClick={() => { setActiveModule("home"); if (isMobile) setSidebarOpen(false); }} className="font-display" style={{ fontSize: '18px', fontWeight: '700', cursor: 'pointer' }}>MarketAI™</span>
+                {isMobile ? (
+                  <button 
+                    onClick={() => setSidebarOpen(false)}
+                    style={{ background: 'none', border: 'none', color: '#FFF', cursor: 'pointer', padding: '4px' }}
+                  >
+                    <Icon name="cross" size={18} />
+                  </button>
+                ) : auditMode && (
                   <span className="font-mono" style={{ background: 'var(--amber)', color: '#FFF', fontSize: '9px', fontWeight: '600', padding: '2px 6px', borderRadius: '4px', letterSpacing: '0.05em' }}>AUDIT MODE</span>
                 )}
               </div>
@@ -1603,7 +1646,10 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
                           return (
                             <button
                               key={m.id}
-                              onClick={() => setActiveModule(m.id)}
+                              onClick={() => {
+                                setActiveModule(m.id);
+                                if (isMobile) setSidebarOpen(false);
+                              }}
                               style={{
                                 width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 20px 7px 24px', border: 'none', background: isActive ? 'var(--rail-hover)' : 'transparent', color: isActive ? '#FFFFFF' : 'var(--rail-text)', cursor: 'pointer', textAlign: 'left', fontSize: '12.5px', transition: 'all 0.15s'
                               }}>
@@ -1658,17 +1704,27 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
 
           {/* Main workspace container */}
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-            <header style={{ height: '64px', borderBottom: '1px solid var(--border)', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', flexShrink: 0 }}>
-              <div>
-                <h3 className="font-display" style={{ fontSize: '16px', fontWeight: '700' }}>
+            <header style={{ height: '64px', borderBottom: '1px solid var(--border)', background: 'var(--panel)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '0 16px' : '0 32px', flexShrink: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {isMobile && (
+                  <button 
+                    onClick={() => setSidebarOpen(true)}
+                    style={{ background: 'none', border: 'none', color: 'var(--ink)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+                  >
+                    <Icon name="menu" size={20} />
+                  </button>
+                )}
+                <h3 className="font-display" style={{ fontSize: '15px', fontWeight: '700', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? '120px' : 'none' }}>
                   {activeProject ? activeProject.name : "No active project"}
                 </h3>
               </div>
               
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <span style={{ fontSize: '12.5px', color: 'var(--ink-soft)' }}>
-                  User: <strong style={{ color: 'var(--ink)' }}>{currentUser.name}</strong>
-                </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {!isMobile && (
+                  <span style={{ fontSize: '12.5px', color: 'var(--ink-soft)' }}>
+                    User: <strong style={{ color: 'var(--ink)' }}>{currentUser.name}</strong>
+                  </span>
+                )}
                 
                 {(() => {
                   const isSandbox = settings.provider === "sandbox";
@@ -1684,22 +1740,29 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
                     : (inTok * 3 / 1000000) + (outTok * 15 / 1000000);
                   const sessionCost = costNum === 0 ? "$0.00" : "$" + costNum.toFixed(4);
 
+                  const statusLabel = isSandbox 
+                    ? "Sandbox" 
+                    : (settings.provider === "gemini" ? `Gem: ${sessionCost}` : `Cl: ${sessionCost}`);
+
                   return (
                     <span style={{ 
-                      display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '600',
-                      padding: '6px 12px', borderRadius: '6px',
+                      display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '700',
+                      padding: '4px 8px', borderRadius: '4px',
                       background: hasKey ? 'var(--green-soft)' : 'var(--red-soft)',
                       color: hasKey ? 'var(--green)' : 'var(--red)',
                       border: `1px solid ${hasKey ? 'rgba(5,150,105,0.2)' : 'rgba(220,38,38,0.2)'}`
                     }}>
                       <span style={{ 
-                        width: '8px', height: '8px', borderRadius: '50%', 
+                        width: '6px', height: '6px', borderRadius: '50%', 
                         background: hasKey ? 'var(--green)' : 'var(--red)',
                         display: 'inline-block' 
                       }} />
-                      {hasKey 
-                        ? `AI Active: ${apiName} (${isSandbox ? "Demo Sandbox" : `Est. ${estCost}/draft`}) · Session: ${isSandbox ? "Free" : sessionCost}`
-                        : "AI Inactive: API Key Required (Configure in Admin settings)"
+                      {isMobile 
+                        ? (hasKey ? statusLabel : "Offline")
+                        : (hasKey 
+                            ? `AI Active: ${apiName} (${isSandbox ? "Demo Sandbox" : `Est. ${estCost}/draft`}) · Session: ${isSandbox ? "Free" : sessionCost}`
+                            : "AI Inactive: API Key Required (Configure in Admin settings)"
+                          )
                       }
                     </span>
                   );
@@ -1708,7 +1771,7 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
             </header>
 
             {/* Workspace scroll area */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '40px' }}>
+            <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '16px' : '40px' }}>
               {activeModule === "home" ? (
                 <HomepageWidget
                   activeProject={activeProject}
@@ -1746,7 +1809,7 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
                       </div>
                       
                       {showPrepGuide && (
-                        <div className="fade-in" style={{ fontSize: '12.5px', color: 'var(--ink-soft)', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px', borderTop: '1px solid rgba(37,99,235,0.1)', paddingTop: '10px', lineHeight: 1.5 }}>
+                        <div className="fade-in" style={{ fontSize: '12.5px', color: 'var(--ink-soft)', display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: '20px', borderTop: '1px solid rgba(37,99,235,0.1)', paddingTop: '10px', lineHeight: 1.5 }}>
                           <div>
                             <h4 style={{ fontWeight: '700', marginBottom: '4px', color: 'var(--ink)', fontSize: '12.5px' }}>1. Brief & Account Sizing (Modules 2 & 4)</h4>
                             <p style={{ margin: 0 }}>Describe your offering, ACV target, and launch goal. Gather target account counts (TAM/SAM/SOM) filtered by NAICS industry codes (e.g. NAICS 339112 for Healthcare Device manufacturing).</p>
@@ -2855,21 +2918,21 @@ ${historyText}`;
       return (
         <div className="fade-in" style={{ maxWidth: '840px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '32px' }}>
           {/* Hero Section */}
-          <div style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', borderRadius: '12px', padding: '40px', color: '#FFF', position: 'relative', overflow: 'hidden' }} className="shadow-premium">
+          <div style={{ background: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)', borderRadius: '12px', padding: window.innerWidth < 768 ? '24px' : '40px', color: '#FFF', position: 'relative', overflow: 'hidden' }} className="shadow-premium">
             <div style={{ position: 'absolute', right: '-20px', bottom: '-20px', opacity: 0.1 }}>
               <Icon name="briefcase" size={200} color="#FFF" />
             </div>
             <span style={{ background: 'var(--cobalt)', color: '#FFF', fontSize: '11px', fontWeight: 'bold', padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Enterprise Suite
             </span>
-            <h1 className="font-display" style={{ fontSize: '32px', fontWeight: '800', marginTop: '12px', lineHeight: 1.2 }}>
+            <h1 className="font-display" style={{ fontSize: window.innerWidth < 768 ? '24px' : '32px', fontWeight: '800', marginTop: '12px', lineHeight: 1.2 }}>
               Welcome to MarketAI™ B2B Strategy Suite
             </h1>
-            <p style={{ fontSize: '15px', color: '#94A3B8', marginTop: '8px', maxWidth: '540px', lineHeight: 1.5 }}>
+            <p style={{ fontSize: window.innerWidth < 768 ? '13.5px' : '15px', color: '#94A3B8', marginTop: '8px', maxWidth: '540px', lineHeight: 1.5 }}>
               An interactive, AI-powered framework engineered to size markets, segment audiences, track competitors, and compile GTM campaigns.
             </p>
             
-            <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+            <div style={{ display: 'flex', flexDirection: window.innerWidth < 768 ? 'column' : 'row', gap: '12px', marginTop: '24px' }}>
               <button 
                 onClick={() => {
                   const demo = userProjects.find(p => p.id === "healthcare-demo");
@@ -2904,7 +2967,7 @@ ${historyText}`;
             <p style={{ fontSize: '13.5px', color: 'var(--ink-soft)', lineHeight: 1.5, marginBottom: '20px' }}>
               Before launching your campaigns, compile these essential data vectors from your operations team or databases (like Apollo, ZoomInfo, or definitive registries):
             </p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth < 768 ? '1fr' : 'repeat(2, 1fr)', gap: '20px' }}>
               <div style={{ paddingLeft: '12px', borderLeft: '2px solid var(--cobalt)' }}>
                 <h4 style={{ fontWeight: '600', fontSize: '13px', color: 'var(--ink)' }}>1. Firmographic Details (Module 2)</h4>
                 <p style={{ fontSize: '12px', color: 'var(--ink-soft)', margin: '4px 0 0 0', lineHeight: 1.4 }}>Determine target NAICS classification codes (e.g. NAICS 339112 for medical devices) and expected deal ACV.</p>
