@@ -1703,7 +1703,11 @@ Return ONLY clean Markdown formatting (with headings, lists, bold text). Keep ou
                       }
                     </span>
                   );
-                 {/* Workspace scroll area */}
+                })()}
+              </div>
+            </header>
+
+            {/* Workspace scroll area */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '40px' }}>
               {activeModule === "home" ? (
                 <HomepageWidget
