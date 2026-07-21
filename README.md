@@ -46,6 +46,12 @@ Currently runs as a Claude artifact preview. For standalone deployment
 (outside the artifact sandbox), this would need to move to a hosted React
 build with persistent storage — see roadmap.
 
+## Development note
+
+Development assisted by Claude Code (Anthropic) under my direction. The
+methodology, product design, and domain expertise reflected in this tool
+are my own — see `METHODOLOGY.md` for the original framework.
+
 ## Related
 
 See [`METHODOLOGY.md`](./METHODOLOGY.md) for the market-levels framework and
