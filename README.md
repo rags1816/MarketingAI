@@ -29,30 +29,32 @@ methodology as the Category AI / Procure AI suite: **Market Levels → Drivers
 
 ## Status
 
-v2.0. Currently a single-file React application (`b2bmarket-ai-strategy-suite.jsx`)
-running as a Claude artifact. No persistence yet — all state clears on
-refresh; users export the Strategy Document as they go. See roadmap in
+v3.1 (frozen release — see [`docs/RELEASE_NOTES.md`](./docs/RELEASE_NOTES.md)).
+Deployed as a standalone, self-contained `index.html` via GitHub Pages. No
+separate `.jsx` source file is maintained in this repo — React, Babel
+Standalone, and pptxgenjs are loaded via CDN and the component is inlined
+directly in `index.html`. No persistence yet — all state clears on refresh;
+users export the Strategy Document as they go. See roadmap in
 `METHODOLOGY.md` for planned save/load and export upgrades.
 
 ## Tech stack
 
-Single-file React component. AI via Claude (built into the artifact
-environment, no key needed) or Gemini (user-supplied key, held in memory
-only, never persisted). No external state libraries; styling inline.
+Single self-contained `index.html` file — React and Babel Standalone loaded
+via CDN, no build step. AI via Claude or Gemini (user-supplied key, held in
+memory only, never persisted). No external state libraries; styling inline.
 
 ## How to run
 
-Currently runs as a Claude artifact preview. For standalone deployment
-(outside the artifact sandbox), this would need to move to a hosted React
-build with persistent storage — see roadmap.
+Open `index.html` directly in a browser, or visit the live GitHub Pages
+deployment — no install, no build, no server required.
+
+## Related
+
+See [`METHODOLOGY.md`](./METHODOLOGY.md) for the market-levels framework and
+the consulting models this suite applies at each stage.
 
 ## Development note
 
 Development assisted by Claude Code (Anthropic) under my direction. The
 methodology, product design, and domain expertise reflected in this tool
 are my own — see `METHODOLOGY.md` for the original framework.
-
-## Related
-
-See [`METHODOLOGY.md`](./METHODOLOGY.md) for the market-levels framework and
-the consulting models this suite applies at each stage.
